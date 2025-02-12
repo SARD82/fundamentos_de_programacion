@@ -1,0 +1,907 @@
+INICIO Proyecto_final
+
+    // Definición de constantes
+    DEFINIR MAX_ANCHO = 500
+    DEFINIR MAX_ALTO = 500
+
+    // Declaración de variables enteras
+    ENTERO alto, ancho, umbral
+    ENTERO alto_frente, ancho_frente, alto_fondo, ancho_fondo
+
+    // Declaración de matrices
+    MATRIZ matriz[MAX_ALTO][MAX_ANCHO][3] TIPO CARACTER
+    MATRIZ canal_rojo[MAX_ALTO][MAX_ANCHO][3] TIPO CARACTER
+    MATRIZ canal_verde[MAX_ALTO][MAX_ANCHO][3] TIPO CARACTER
+    MATRIZ canal_azul[MAX_ALTO][MAX_ANCHO][3] TIPO CARACTER
+    MATRIZ grises[MAX_ALTO][MAX_ANCHO][3] TIPO CARACTER
+    MATRIZ bn[MAX_ALTO][MAX_ANCHO][3] TIPO CARACTER
+
+    // Declaración de arreglos para histogramas
+    ARREGLO histR[256] TIPO ENTERO
+    ARREGLO histG[256] TIPO ENTERO
+    ARREGLO histB[256] TIPO ENTERO
+    ARREGLO histGris[256] TIPO ENTERO
+
+    // Matrices para procesamiento de imágenes
+    MATRIZ frente[MAX_ALTO][MAX_ANCHO][3] TIPO CARACTER
+    MATRIZ fondo[MAX_ALTO][MAX_ANCHO][3] TIPO CARACTER
+    MATRIZ mezcla[MAX_ALTO][MAX_ANCHO][3] TIPO CARACTER
+
+    FUNCION PRINCIPAL(argumentos, valores[])
+
+        // Verificación inicial de argumentos
+        SI (argumentos < 2 O argumentos > 6) ENTONCES
+            IMPRIMIR "Error: No se proporcionaron los argumentos correctos."
+            IMPRIMIR "Use el comando -help para obtener mas informacion."
+        FIN SI
+
+        // Verificar si se solicita ayuda
+        SI (valores[1] = "-help") ENTONCES
+            LLAMAR mostrar_ayuda()
+        FIN SI
+
+        // Leer cabeceras según formato
+        SI (valores[1] = "1b" O "2b" O "3b" O "4b" O "5b" O "6b" O "7b" O "8b" O "9b") ENTONCES
+            LLAMAR leer_cabecera_bmp(valores[2])
+        SINO SI (valores[1] = "1p" O "2p" O "3p" O "4p" O "5p" O "6p" O "7p" O "8p" O "9p") ENTONCES
+            LLAMAR leer_cabecera_pnm(valores[2])
+        FIN SI
+
+        // Procesamiento de comandos BMP
+        SEGUN valores[1] HACER
+            CASO "1b":
+                LEER_IMAGEN_BMP(valores[2], matriz, alto, ancho)
+                SEPARAR_CANAL_ROJO(matriz, canal_rojo, alto, ancho)
+                SEPARAR_CANAL_VERDE(matriz, canal_verde, alto, ancho)
+                SEPARAR_CANAL_AZUL(matriz, canal_azul, alto, ancho)
+                ESCRIBIR_IMAGEN("rojo.bmp", canal_rojo)
+                ESCRIBIR_IMAGEN("verde.bmp", canal_verde)
+                ESCRIBIR_IMAGEN("azul.bmp", canal_azul)
+                IMPRIMIR "Se han creado los archivos rojo.bmp, verde.bmp y azul.bmp."
+            FIN CASO
+
+            CASO "2b":
+                LEER_IMAGEN_BMP(valores[2], matriz, alto, ancho)
+                SEPARAR_CANAL_ROJO(matriz, canal_rojo, alto, ancho)
+                ESCRIBIR_IMAGEN("rojo.bmp", canal_rojo)
+                IMPRIMIR "Se ha creado el archivo rojo.bmp."
+            FIN CASO
+
+            CASO "3b":
+                LEER_IMAGEN_BMP(valores[2], matriz, alto, ancho)
+                SEPARAR_CANAL_VERDE(matriz, canal_verde, alto, ancho)
+                ESCRIBIR_IMAGEN("verde.bmp", canal_verde)
+                IMPRIMIR "Se ha creado el archivo verde.bmp."
+            FIN CASO
+
+            CASO "4b":
+                LEER_IMAGEN_BMP(valores[2], matriz, alto, ancho)
+                SEPARAR_CANAL_AZUL(matriz, canal_azul, alto, ancho)
+                ESCRIBIR_IMAGEN("azul.bmp", canal_azul)
+                IMPRIMIR "Se ha creado el archivo azul.bmp."
+            FIN CASO
+
+            CASO "5b":
+                LEER_IMAGEN_BMP(valores[2], matriz, alto, ancho)
+                CONVERTIR_A_GRISES(matriz, grises, alto, ancho)
+                ESCRIBIR_IMAGEN("grises.bmp", grises)
+                IMPRIMIR "Se ha creado el archivo grises.bmp."
+            FIN CASO
+
+            CASO "5b":
+                LEER_IMAGEN_BMP(valores[2], matriz, alto, ancho)
+                CONVERTIR_A_GRISES(matriz, grises, alto, ancho)
+                ESCRIBIR_IMAGEN("grises.bmp", grises)
+                IMPRIMIR "Se ha creado el archivo grises.bmp."
+            FIN CASO
+
+            CASO "6b":
+                umbral = CONVERTIR_A_ENTERO(valores[3])
+                LEER_IMAGEN_BMP(valores[2], matriz, alto, ancho)
+                CONVERTIR_A_BN(matriz, bn, alto, ancho, umbral)
+                ESCRIBIR_IMAGEN("bn.bmp", bn)
+                IMPRIMIR "Se ha creado el archivo bn.bmp."
+            FIN CASO
+
+            CASO "7b":
+                LEER_IMAGEN_BMP(valores[2], matriz, alto, ancho)
+                
+                // Calcular histogramas
+                CALCULAR_HISTOGRAMA_COLOR(matriz, alto, ancho, histR, histG, histB)
+                CALCULAR_HISTOGRAMA_GRISES(matriz, alto, ancho, histGris)
+                
+                // Escribir archivos
+                ESCRIBIR_HISTOGRAMA("histR.txt", histR)
+                ESCRIBIR_HISTOGRAMA("histG.txt", histG)
+                ESCRIBIR_HISTOGRAMA("histB.txt", histB)
+                ESCRIBIR_HISTOGRAMA("histGris.txt", histGris)
+                
+                IMPRIMIR "Histogramas generados exitosamente"
+            FIN CASO
+
+            CASO "8b":
+                // Verificar argumentos
+                SI (argumentos != 5) ENTONCES
+                    IMPRIMIR "Error: Uso correcto: programa 8b frente.bmp fondo.bmp alpha"
+                FIN SI
+        
+                // Convertir alpha a entero
+                alpha = CONVERTIR_A_ENTERO(valores[4])
+                
+                // Leer imágenes
+                LEER_IMAGEN_BMP(valores[2], frente, alto_frente, ancho_frente)
+                LEER_IMAGEN_BMP(valores[3], fondo, alto_fondo, ancho_fondo)
+                
+                // Verificar dimensiones
+                SI (alto_frente != alto_fondo O ancho_frente != ancho_fondo) ENTONCES
+                    IMPRIMIR "Error: Las imagenes deben tener el mismo tamano"
+                FIN SI
+                
+                MEZCLAR_IMAGENES(frente, fondo, mezcla, alto_frente, ancho_frente, alpha)
+                ESCRIBIR_IMAGEN_BMP("mezcla.bmp", mezcla, alto_frente, ancho_frente)
+                IMPRIMIR "Mezcla realizada con exito. Resultado guardado en 'mezcla.bmp'"
+            FIN CASO
+
+            CASO "9b":
+                // Verificar argumentos
+                SI (argumentos != 6) ENTONCES
+                    IMPRIMIR "Error: Uso correcto: programa 9b imagen.bmp fondo.bmp umbral alpha"
+                FIN SI
+
+                umbral = CONVERTIR_A_ENTERO(valores[4])
+                alpha = CONVERTIR_A_ENTERO(valores[5])
+
+                //Verificar dimensiones
+                SI (alto > MAX_ALTO) O (ancho > MAX_ANCHO) O (alto_fondo > MAX_ALTO) O (ancho_fondo > MAX_ANCHO) ENTONCES
+                    IMPRIMIR "Error: Las dimensiones exceden los límites permitidos (MAXIMO_ALTOxMAXIMO_ANCHO)"
+                FIN SI
+
+                // Verificar rangos
+                SI (umbral < 0 O umbral > 255 O alpha < 0 O alpha > 255) ENTONCES
+                    IMPRIMIR "Error: umbral y alpha deben estar entre 0 y 255"
+                FIN SI
+
+                IMPRIMIR "=== Procesando todos los comandos para BMP ==="
+
+                // 1. Separar canales RGB
+                IMPRIMIR "1. Separando canales RGB..."
+                LEER_IMAGEN_BMP(valores[2], matriz, alto, ancho)
+                SEPARAR_CANAL_ROJO(matriz, canal_rojo, alto, ancho)
+                SEPARAR_CANAL_VERDE(matriz, canal_verde, alto, ancho)
+                SEPARAR_CANAL_AZUL(matriz, canal_azul, alto, ancho)
+                ESCRIBIR_IMAGEN("rojo.bmp", canal_rojo)
+                ESCRIBIR_IMAGEN("verde.bmp", canal_verde)
+                ESCRIBIR_IMAGEN("azul.bmp", canal_azul)
+
+                // 2. Escala de grises
+                IMPRIMIR "2. Generando imagen en escala de grises..."
+                CONVERTIR_A_GRISES(matriz, grises, alto, ancho)
+                ESCRIBIR_IMAGEN("grises.bmp", grises)
+
+                // 3. Blanco y negro
+                IMPRIMIR "3. Generando imagen en blanco y negro..."
+                CONVERTIR_A_BN(matriz, bn, alto, ancho, umbral)
+                ESCRIBIR_IMAGEN("bn.bmp", bn)
+
+                // 4. Histogramas
+                IMPRIMIR "4. Calculando histogramas..."
+                CALCULAR_HISTOGRAMA_COLOR(matriz, alto, ancho, histR, histG, histB)
+                CALCULAR_HISTOGRAMA_GRISES(matriz, alto, ancho, histGris)
+                ESCRIBIR_HISTOGRAMA("histR.txt", histR)
+                ESCRIBIR_HISTOGRAMA("histG.txt", histG)
+                ESCRIBIR_HISTOGRAMA("histB.txt", histB)
+                ESCRIBIR_HISTOGRAMA("histGris.txt", histGris)
+
+                // 5. Mezcla de imágenes
+                IMPRIMIR "5. Mezclando imagenes..."
+                LEER_IMAGEN_BMP(valores[3], fondo, alto_fondo, ancho_fondo)
+                SI (alto != alto_fondo O ancho != ancho_fondo) ENTONCES
+                    IMPRIMIR "Error: Las imagenes deben tener el mismo tamano"
+                FIN SI
+                MEZCLAR_IMAGENES(matriz, fondo, mezcla, alto, ancho, alpha)
+                ESCRIBIR_IMAGEN("mezcla.bmp", mezcla)
+
+                IMPRIMIR "=== Procesamiento completado ==="
+                IMPRIMIR "Archivos generados:"
+                IMPRIMIR "- rojo.bmp, verde.bmp, azul.bmp"
+                IMPRIMIR "- grises.bmp"
+                IMPRIMIR "- bn.bmp"
+                IMPRIMIR "- histR.txt, histG.txt, histB.txt, histGris.txt"
+                IMPRIMIR "- mezcla.bmp"
+            FIN CASO
+
+            CASO "1p":
+                LEER_IMAGEN_PNM(valores[2], matriz, alto, ancho)
+                SEPARAR_CANAL_ROJO(matriz, canal_rojo, alto, ancho)
+                SEPARAR_CANAL_VERDE(matriz, canal_verde, alto, ancho)
+                SEPARAR_CANAL_AZUL(matriz, canal_azul, alto, ancho)
+                ESCRIBIR_IMAGEN("rojo.pnm", canal_rojo)
+                ESCRIBIR_IMAGEN("verde.pnm", canal_verde)
+                ESCRIBIR_IMAGEN("azul.pnm", canal_azul)
+                IMPRIMIR "Se han creado los archivos rojo.pnm, verde.pnm y azul.pnm."
+            FIN CASO
+
+            CASO "2p":
+                LEER_IMAGEN_PNM(valores[2], matriz, alto, ancho)
+                SEPARAR_CANAL_ROJO(matriz, canal_rojo, alto, ancho)
+                ESCRIBIR_IMAGEN("rojo.pnm", canal_rojo)
+                IMPRIMIR "Se ha creado el archivo rojo.pnm."
+            FIN CASO
+
+            CASO "3p":
+                LEER_IMAGEN_PNM(valores[2], matriz, alto, ancho)
+                SEPARAR_CANAL_VERDE(matriz, canal_verde, alto, ancho)
+                ESCRIBIR_IMAGEN("verde.pnm", canal_verde)
+                IMPRIMIR "Se ha creado el archivo verde.pnm."
+            FIN CASO
+
+            CASO "4p":
+                LEER_IMAGEN_PNM(valores[2], matriz, alto, ancho)
+                SEPARAR_CANAL_AZUL(matriz, canal_azul, alto, ancho)
+                ESCRIBIR_IMAGEN("azul.pnm", canal_azul)
+                IMPRIMIR "Se ha creado el archivo azul.pnm."
+            FIN CASO
+
+            CASO "5p":
+                LEER_IMAGEN_PNM(valores[2], matriz, alto, ancho)
+                CONVERTIR_A_GRISES(matriz, grises, alto, ancho)
+                ESCRIBIR_IMAGEN("grises.pnm", grises)
+                IMPRIMIR "Se ha creado el archivo grises.pnm."
+            FIN CASO
+
+            CASO "6p":
+                umbral = CONVERTIR_A_ENTERO(valores[3])
+                LEER_IMAGEN_PNM(valores[2], matriz, alto, ancho)
+                CONVERTIR_A_BN(matriz, bn, alto, ancho, umbral)
+                ESCRIBIR_IMAGEN("bn.pnm", bn)
+                IMPRIMIR "Se ha creado el archivo bn.pnm."
+            FIN CASO    
+
+            CASO "7p":
+                LEER_IMAGEN_PNM(valores[2], matriz, alto, ancho)
+                CALCULAR_HISTOGRAMA_COLOR(matriz, alto, ancho, histR, histG, histB)
+                CALCULAR_HISTOGRAMA_GRISES(matriz, alto, ancho, histGris)
+                ESCRIBIR_HISTOGRAMA("histR.txt", histR)
+                ESCRIBIR_HISTOGRAMA("histG.txt", histG)
+                ESCRIBIR_HISTOGRAMA("histB.txt", histB)
+                ESCRIBIR_HISTOGRAMA("histGris.txt", histGris)
+                IMPRIMIR "Histogramas generados exitosamente"
+            FIN CASO
+
+            CASO "8p":
+                SI (argumentos != 5) ENTONCES
+                    IMPRIMIR "Error: Uso correcto: programa 8p frente.pnm fondo.pnm alpha"
+                FIN SI
+        
+                alpha = CONVERTIR_A_ENTERO(valores[4])
+                LEER_IMAGEN_PNM(valores[2], frente, alto_frente, ancho_frente)
+                LEER_IMAGEN_PNM(valores[3], fondo, alto_fondo, ancho_fondo)
+            
+                SI (alto_frente != alto_fondo O ancho_frente != ancho_fondo) ENTONCES
+                    IMPRIMIR "Error: Las imagenes deben tener el mismo tamano"
+                FIN SI
+        
+                MEZCLAR_IMAGENES(frente, fondo, mezcla, alto_frente, ancho_frente, alpha)
+                ESCRIBIR_IMAGEN("mezcla.pnm", mezcla)
+                IMPRIMIR "Mezcla realizada con exito. Resultado guardado en 'mezcla.pnm'"
+            FIN CASO
+
+            CASO "9p":
+                SI (argumentos != 6) ENTONCES
+                    IMPRIMIR "Error: Uso correcto: programa 9p imagen.pnm fondo.pnm umbral alpha"
+                FIN SI
+
+                umbral = CONVERTIR_A_ENTERO(valores[4])
+                alpha = CONVERTIR_A_ENTERO(valores[5])
+
+                //Verificar dimensiones
+                SI (alto > MAX_ALTO) O (ancho > MAX_ANCHO) O (alto_fondo > MAX_ALTO) O (ancho_fondo > MAX_ANCHO) ENTONCES
+                    IMPRIMIR "Error: Las dimensiones exceden los límites permitidos (MAXIMO_ALTOxMAXIMO_ANCHO)"
+                FIN SI
+
+                SI (umbral < 0 O umbral > 255 O alpha < 0 O alpha > 255) ENTONCES
+                    IMPRIMIR "Error: umbral y alpha deben estar entre 0 y 255"
+                FIN SI
+
+                IMPRIMIR "=== Procesando todos los comandos para PNM ==="
+
+                // 1. Separar canales RGB
+                IMPRIMIR "1. Separando canales RGB..."
+                LEER_IMAGEN_PNM(valores[2], matriz, alto, ancho)
+                SEPARAR_CANAL_ROJO(matriz, canal_rojo, alto, ancho)
+                SEPARAR_CANAL_VERDE(matriz, canal_verde, alto, ancho)
+                SEPARAR_CANAL_AZUL(matriz, canal_azul, alto, ancho)
+                ESCRIBIR_IMAGEN("rojo.pnm", canal_rojo)
+                ESCRIBIR_IMAGEN("verde.pnm", canal_verde)
+                ESCRIBIR_IMAGEN("azul.pnm", canal_azul)
+
+                // 2. Escala de grises
+                IMPRIMIR "2. Generando imagen en escala de grises..."
+                CONVERTIR_A_GRISES(matriz, grises, alto, ancho)
+                ESCRIBIR_IMAGEN("grises.pnm", grises)
+
+                // 3. Blanco y negro
+                IMPRIMIR "3. Generando imagen en blanco y negro..."
+                CONVERTIR_A_BN(matriz, bn, alto, ancho, umbral)
+                ESCRIBIR_IMAGEN("bn.pnm", bn)
+
+                // 4. Histogramas
+                IMPRIMIR "4. Calculando histogramas..."
+                CALCULAR_HISTOGRAMA_COLOR(matriz, alto, ancho, histR, histG, histB)
+                CALCULAR_HISTOGRAMA_GRISES(matriz, alto, ancho, histGris)
+                ESCRIBIR_HISTOGRAMA("histR.txt", histR)
+                ESCRIBIR_HISTOGRAMA("histG.txt", histG)
+                ESCRIBIR_HISTOGRAMA("histB.txt", histB)
+                ESCRIBIR_HISTOGRAMA("histGris.txt", histGris)
+
+                // 5. Mezcla de imágenes
+                IMPRIMIR "5. Mezclando imagenes..."
+                LEER_IMAGEN_PNM(valores[3], fondo, alto_fondo, ancho_fondo)
+                SI (alto != alto_fondo O ancho != ancho_fondo) ENTONCES
+                    IMPRIMIR "Error: Las imagenes deben tener el mismo tamano"
+                FIN SI
+                MEZCLAR_IMAGENES(matriz, fondo, mezcla, alto, ancho, alpha)
+                ESCRIBIR_IMAGEN("mezcla.pnm", mezcla)
+
+                IMPRIMIR "=== Procesamiento completado ==="
+                IMPRIMIR "Archivos generados:"
+                IMPRIMIR "- rojo.pnm, verde.pnm, azul.pnm"
+                IMPRIMIR "- grises.pnm"
+                IMPRIMIR "- bn.pnm"
+                IMPRIMIR "- histR.txt, histG.txt, histB.txt, histGris.txt"
+                IMPRIMIR "- mezcla.pnm"
+            FIN CASO
+
+            OTRO:
+                IMPRIMIR "Error: Comando no reconocido."
+                IMPRIMIR "Use el comando -help para obtener mas informacion."
+            FIN OTRO
+        FIN SEGUN
+    FIN FUNCION
+
+    FUNCION mostrar_ayuda()
+        IMPRIMIR "--------------------------------------------------------------------------------------------------------------"
+        
+        IMPRIMIR "Uso del programa:"
+        IMPRIMIR "1p o 1b -> Extrar matrices R, G, B de una imagen."
+        IMPRIMIR "2p o 2b -> Extraer unicamente la matriz R."
+        IMPRIMIR "3p o 3b -> Extraer unicamente la matriz G."
+        IMPRIMIR "4p o 4b -> Extraer unicamente la matriz B."
+        IMPRIMIR "5p o 5b -> Generar imagen en escala de grises."
+        IMPRIMIR "6p umbral o 6b umbral -> Generar imagen en blanco y negro con umbral (0-255)."
+        IMPRIMIR "7p o 7b -> Calcular y guardar el histograma."
+        IMPRIMIR "8p alpha o 8b alpha -> Mezclar dos imagenes con coeficiente alpha (0-255)."
+        IMPRIMIR "9p umbral alpha o 9b umbral alpha -> Realizar todos los procesos sobre las imagenes."
+        IMPRIMIR "-help -> Mostrar este menu de ayuda."
+        
+        IMPRIMIR "--------------------------------------------------------------------------------------------------------------"
+        
+        IMPRIMIR "Uso: <tipo imagen> <nombre archivo> [parametros adicionales]"
+        IMPRIMIR "Ejemplos de uso:"
+        IMPRIMIR "programa 1p/1b imagen.pnm"
+        IMPRIMIR "programa 2p/2b imagen.pnm"
+        IMPRIMIR "programa 3p/3b imagen.pnm"
+        IMPRIMIR "programa 4p/4b imagen.pnm"
+        IMPRIMIR "programa 5b/5p imagen.bmp"
+        IMPRIMIR "programa 6b/6p imagen.bmp umbral"
+        IMPRIMIR "programa 7b/7p imagen.bmp"
+        IMPRIMIR "programa 8b/8p frente.pnm fondo.pnm alpha"
+        IMPRIMIR "programa 9b/9p imagen1.pnm(Esta primera sera la imagen que haga todos los procesos) imagen2.bmp umbral alpha"
+        
+        IMPRIMIR "--------------------------------------------------------------------------------------------------------------"
+    FIN FUNCION
+
+    FUNCION leer_cabecera_bmp(nombre_archivo: TEXTO CONSTANTE)
+        // Abrir archivo en modo binario
+        archivo = ABRIR_ARCHIVO(nombre_archivo, "rb")
+        
+        SI (archivo ES NULO) ENTONCES
+            IMPRIMIR "Error: No se pudo abrir el archivo ", nombre_archivo
+            RETORNAR
+        FIN SI
+
+        // Declarar variables para la cabecera
+        DEFINIR tipo, planos, bpp COMO ENTERO_CORTO_SIN_SIGNO
+        DEFINIR tamano, reservado, offset, tamanoDIB COMO ENTERO_SIN_SIGNO
+        DEFINIR ancho, alto COMO ENTERO
+
+        // Leer campos de la cabecera
+        LEER_BINARIO(archivo, tipo)
+        LEER_BINARIO(archivo, tamano)
+        LEER_BINARIO(archivo, reservado)
+        LEER_BINARIO(archivo, offset)
+        LEER_BINARIO(archivo, tamanoDIB)
+        LEER_BINARIO(archivo, ancho)
+        LEER_BINARIO(archivo, alto)
+        LEER_BINARIO(archivo, planos)
+        LEER_BINARIO(archivo, bpp)
+
+        // Mostrar información
+        IMPRIMIR "--------------------------------------------------------------------------------------------------------------"
+        IMPRIMIR "Informacion de la cabecera bmp:"
+        IMPRIMIR "Tamano del archivo: ", tamano, " bytes."
+        IMPRIMIR "Dimensiones: ", ancho, "x", alto, " pixeles."
+        IMPRIMIR "Bits por pixel: ", bpp
+        IMPRIMIR "Offset de datos: ", offset, " bytes."
+        IMPRIMIR "--------------------------------------------------------------------------------------------------------------"
+
+        CERRAR_ARCHIVO(archivo)
+    FIN FUNCION
+
+    FUNCION leer_cabecera_pnm(nombre_archivo: TEXTO CONSTANTE)
+        // Abrir archivo en modo lectura
+        archivo = ABRIR_ARCHIVO(nombre_archivo, "r")
+        
+        SI (archivo ES NULO) ENTONCES
+            IMPRIMIR "Error: No se pudo abrir el archivo ", nombre_archivo
+            RETORNAR
+        FIN SI
+
+        // Declarar variables para la cabecera
+        DEFINIR numero_magico[3] COMO CARACTER
+        DEFINIR ancho, alto, maxval COMO ENTERO
+
+        // Leer número mágico (primeros dos caracteres)
+        LEER_FORMATO(archivo, "%2s", numero_magico)
+
+        // Procesar comentarios
+        caracter = LEER_CARACTER(archivo)
+        
+        MIENTRAS (caracter = '#') HACER
+            MIENTRAS (LEER_CARACTER(archivo) != '\n') HACER
+                // Continuar leyendo hasta fin de línea
+            FIN MIENTRAS
+            caracter = LEER_CARACTER(archivo)
+        FIN MIENTRAS
+        
+        DEVOLVER_CARACTER(caracter, archivo)
+
+        // Leer dimensiones y valor máximo
+        LEER_FORMATO(archivo, "%d %d %d", ancho, alto, maxval)
+
+        // Mostrar información
+        IMPRIMIR "--------------------------------------------------------------------------------------------------------------"
+        IMPRIMIR "Informacion de la cabecera pnm:"
+        IMPRIMIR "Numero magico: ", numero_magico
+        IMPRIMIR "Dimensiones: ", ancho, "x", alto, " pixeles."
+        IMPRIMIR "Valor maximo: ", maxval
+        IMPRIMIR "--------------------------------------------------------------------------------------------------------------"
+
+        CERRAR_ARCHIVO(archivo)
+    FIN FUNCION
+
+    FUNCION leer_imagen_bmp(nombre_archivo: TEXTO, matriz[MAX_ALTO][MAX_ANCHO][3]: CARACTER_SIN_SIGNO, *alto: ENTERO, *ancho: ENTERO)
+        // Abrir archivo en modo binario
+        archivo = ABRIR_ARCHIVO(nombre_archivo, "rb")
+        
+        // Declarar variables locales
+        DEFINIR bytes_por_linea, padding, i, j COMO ENTERO
+        DEFINIR cabecera_bmp[54] COMO CARACTER_SIN_SIGNO
+        
+        SI (archivo ES NULO) ENTONCES
+            IMPRIMIR "Error al abrir el archivo ", nombre_archivo
+            RETORNAR
+        FIN SI
+
+        // Leer cabecera BMP
+        LEER_BINARIO(archivo, cabecera_bmp, 54)
+
+        // Obtener dimensiones
+        *ancho = CONVERTIR_A_ENTERO(cabecera_bmp[18])
+        *alto = CONVERTIR_A_ENTERO(cabecera_bmp[22])
+
+        // Verificar dimensiones máximas
+        SI (*ancho > MAX_ANCHO O *alto > MAX_ALTO) ENTONCES
+            IMPRIMIR "Error: La imagen excede los limites permitidos (", MAX_ANCHO, "x", MAX_ALTO, ")"
+            CERRAR_ARCHIVO(archivo)
+            RETORNAR
+        FIN SI
+
+        // Calcular padding
+        bytes_por_linea = (*ancho) * 3
+        padding = (4 - (bytes_por_linea MOD 4)) MOD 4
+
+        // Leer datos de la imagen
+        PARA i DESDE (*alto - 1) HASTA 0 DECREMENTO 1 HACER
+            PARA j DESDE 0 HASTA (*ancho - 1) HACER
+                // Leer componentes BGR
+                LEER_BINARIO(archivo, matriz[i][j][2], 1)  // Azul
+                LEER_BINARIO(archivo, matriz[i][j][1], 1)  // Verde
+                LEER_BINARIO(archivo, matriz[i][j][0], 1)  // Rojo
+            FIN PARA
+            
+            // Saltar padding
+            MOVER_PUNTERO_ARCHIVO(archivo, padding, ACTUAL)
+        FIN PARA
+
+        CERRAR_ARCHIVO(archivo)
+    FIN FUNCION
+
+    FUNCION escribir_imagen_bmp(nombre_archivo: TEXTO, matriz[MAX_ALTO][MAX_ANCHO][3]: CARACTER_SIN_SIGNO, alto: ENTERO, ancho: ENTERO)
+        // Abrir archivo en modo binario para escritura
+        archivo = ABRIR_ARCHIVO(nombre_archivo, "wb")
+        
+        // Declarar variables
+        DEFINIR cabecera_bmp[54] COMO CARACTER_SIN_SIGNO
+        DEFINIR bytes_por_linea, padding, tamano_archivo, i, j COMO ENTERO
+        DEFINIR byte_padding COMO CARACTER_SIN_SIGNO = 0
+        
+        SI (archivo ES NULO) ENTONCES
+            IMPRIMIR "Error al crear el archivo ", nombre_archivo
+            RETORNAR
+        FIN SI
+
+        // Calcular padding y tamaño del archivo
+        bytes_por_linea = ancho * 3
+        padding = (4 - (bytes_por_linea MOD 4)) MOD 4
+        tamano_archivo = 54 + (bytes_por_linea + padding) * alto
+
+        // Preparar cabecera BMP
+        INICIALIZAR_MEMORIA(cabecera_bmp, 0, 54)  // equivalente a memset
+        
+        // Configurar campos de la cabecera
+        cabecera_bmp[0] = 'B'
+        cabecera_bmp[1] = 'M'
+        ASIGNAR_ENTERO(cabecera_bmp[2], tamano_archivo)
+        ASIGNAR_ENTERO(cabecera_bmp[10], 54)
+        ASIGNAR_ENTERO(cabecera_bmp[14], 40)
+        ASIGNAR_ENTERO(cabecera_bmp[18], ancho)
+        ASIGNAR_ENTERO(cabecera_bmp[22], alto)
+        ASIGNAR_CORTO(cabecera_bmp[26], 1)
+        ASIGNAR_CORTO(cabecera_bmp[28], 24)
+        ASIGNAR_ENTERO(cabecera_bmp[34], (bytes_por_linea + padding) * alto)
+
+        // Escribir cabecera
+        ESCRIBIR_BINARIO(archivo, cabecera_bmp, 54)
+
+        // Escribir datos de la imagen
+        PARA i DESDE (alto - 1) HASTA 0 DECREMENTO 1 HACER
+            PARA j DESDE 0 HASTA (ancho - 1) HACER
+                // Escribir en orden BGR
+                ESCRIBIR_BINARIO(archivo, matriz[i][j][2], 1)  // Azul
+                ESCRIBIR_BINARIO(archivo, matriz[i][j][1], 1)  // Verde
+                ESCRIBIR_BINARIO(archivo, matriz[i][j][0], 1)  // Rojo
+            FIN PARA
+            
+            // Escribir padding
+            PARA j DESDE 0 HASTA (padding - 1) HACER
+                ESCRIBIR_BINARIO(archivo, byte_padding, 1)
+            FIN PARA
+        FIN PARA
+
+        CERRAR_ARCHIVO(archivo)
+    FIN FUNCION
+
+    FUNCION separar_canal_rojo_bmp(matriz[MAX_ALTO][MAX_ANCHO][3]: CARACTER_SIN_SIGNO, rojo[MAX_ALTO][MAX_ANCHO][3]: CARACTER_SIN_SIGNO, alto: ENTERO, ancho: ENTERO)
+        
+        DEFINIR i, j COMO ENTERO
+        
+        PARA i DESDE 0 HASTA (alto - 1) HACER
+            PARA j DESDE 0 HASTA (ancho - 1) HACER
+                rojo[i][j][0] = matriz[i][j][0]  // Mantener componente rojo
+                rojo[i][j][1] = 0                 // Eliminar componente verde
+                rojo[i][j][2] = 0                 // Eliminar componente azul
+            FIN PARA
+        FIN PARA
+    FIN FUNCION
+
+    FUNCION separar_canal_verde_bmp(matriz[MAX_ALTO][MAX_ANCHO][3]: CARACTER_SIN_SIGNO, verde[MAX_ALTO][MAX_ANCHO][3]: CARACTER_SIN_SIGNO, alto: ENTERO, ancho: ENTERO)
+        
+        DEFINIR i, j COMO ENTERO
+        
+        PARA i DESDE 0 HASTA (alto - 1) HACER
+            PARA j DESDE 0 HASTA (ancho - 1) HACER
+                verde[i][j][0] = 0                 // Eliminar componente rojo
+                verde[i][j][1] = matriz[i][j][1]   // Mantener componente verde
+                verde[i][j][2] = 0                 // Eliminar componente azul
+            FIN PARA
+        FIN PARA
+    FIN FUNCION
+
+    FUNCION separar_canal_azul_bmp(matriz[MAX_ALTO][MAX_ANCHO][3]: CARACTER_SIN_SIGNO, azul[MAX_ALTO][MAX_ANCHO][3]: CARACTER_SIN_SIGNO, alto: ENTERO, ancho: ENTERO)
+        
+        DEFINIR i, j COMO ENTERO
+        
+        PARA i DESDE 0 HASTA (alto - 1) HACER
+            PARA j DESDE 0 HASTA (ancho - 1) HACER
+                azul[i][j][0] = 0                 // Eliminar componente rojo
+                azul[i][j][1] = 0                 // Eliminar componente verde
+                azul[i][j][2] = matriz[i][j][2]   // Mantener componente azul
+            FIN PARA
+        FIN PARA
+    FIN FUNCION
+
+    FUNCION leer_imagen_pnm(nombre_archivo: TEXTO, matriz[MAX_ALTO][MAX_ANCHO][3]: CARACTER_SIN_SIGNO, *alto: ENTERO, *ancho: ENTERO)
+        
+        // Declarar variables
+        DEFINIR linea[100] COMO CARACTER
+        DEFINIR max_valor, i, j COMO ENTERO
+        
+        // Abrir archivo en modo binario
+        archivo = ABRIR_ARCHIVO(nombre_archivo, "rb")
+        
+        SI (archivo ES NULO) ENTONCES
+            IMPRIMIR "Error al abrir el archivo ", nombre_archivo
+        FIN SI
+
+        // Verificar formato P6
+        LEER_LINEA(archivo, linea)
+        SI (linea[0] != 'P' O linea[1] != '6') ENTONCES
+            IMPRIMIR "Formato de archivo incorrecto"
+            CERRAR_ARCHIVO(archivo)
+        FIN SI
+
+        // Saltar comentarios
+        REPETIR
+            LEER_LINEA(archivo, linea)
+        MIENTRAS (linea[0] = '#')
+
+        // Leer dimensiones
+        CONVERTIR_TEXTO_A_NUMEROS(linea, ancho, alto)
+
+        // Leer valor máximo
+        LEER_LINEA(archivo, linea)
+        CONVERTIR_TEXTO_A_NUMERO(linea, max_valor)
+
+        // Leer datos de la imagen
+        PARA i DESDE 0 HASTA (*alto - 1) HACER
+            PARA j DESDE 0 HASTA (*ancho - 1) HACER
+                LEER_BINARIO(archivo, matriz[i][j][0], 1)  // Rojo
+                LEER_BINARIO(archivo, matriz[i][j][1], 1)  // Verde
+                LEER_BINARIO(archivo, matriz[i][j][2], 1)  // Azul
+            FIN PARA
+        FIN PARA
+
+        CERRAR_ARCHIVO(archivo)
+    FIN FUNCION
+
+    FUNCION escribir_imagen_pnm(nombre_archivo: TEXTO, matriz[MAX_ALTO][MAX_ANCHO][3]: CARACTER_SIN_SIGNO, alto: ENTERO, ancho: ENTERO)
+        
+        // Declarar variables
+        DEFINIR i, j COMO ENTERO
+        
+        // Abrir archivo en modo binario para escritura
+        archivo = ABRIR_ARCHIVO(nombre_archivo, "wb")
+        
+        SI (archivo ES NULO) ENTONCES
+            IMPRIMIR "Error al crear el archivo ", nombre_archivo
+        FIN SI
+
+        // Escribir cabecera PNM
+        ESCRIBIR_FORMATO(archivo, "P6\n")                  // Identificador del formato
+        ESCRIBIR_FORMATO(archivo, "%d %d\n", ancho, alto)  // Dimensiones
+        ESCRIBIR_FORMATO(archivo, "255\n")                 // Valor máximo
+
+        // Escribir datos de la imagen
+        PARA i DESDE 0 HASTA (alto - 1) HACER
+            PARA j DESDE 0 HASTA (ancho - 1) HACER
+                ESCRIBIR_BINARIO(archivo, matriz[i][j][0], 1)  // Rojo
+                ESCRIBIR_BINARIO(archivo, matriz[i][j][1], 1)  // Verde
+                ESCRIBIR_BINARIO(archivo, matriz[i][j][2], 1)  // Azul
+            FIN PARA
+        FIN PARA
+
+        CERRAR_ARCHIVO(archivo)
+    FIN FUNCION
+
+    FUNCION separar_canal_rojo_pnm(matriz[MAX_ALTO][MAX_ANCHO][3]: CARACTER_SIN_SIGNO, rojo[MAX_ALTO][MAX_ANCHO][3]: CARACTER_SIN_SIGNO, alto: ENTERO, ancho: ENTERO)
+        
+        DEFINIR i, j COMO ENTERO
+        
+        PARA i DESDE 0 HASTA (alto - 1) HACER
+            PARA j DESDE 0 HASTA (ancho - 1) HACER
+                rojo[i][j][0] = matriz[i][j][0]  // Mantener componente rojo
+                rojo[i][j][1] = 0                 // Eliminar componente verde
+                rojo[i][j][2] = 0                 // Eliminar componente azul
+            FIN PARA
+        FIN PARA
+    FIN FUNCION
+
+    FUNCION separar_canal_verde_pnm(matriz[MAX_ALTO][MAX_ANCHO][3]: CARACTER_SIN_SIGNO, verde[MAX_ALTO][MAX_ANCHO][3]: CARACTER_SIN_SIGNO, alto: ENTERO, ancho: ENTERO)
+        
+        DEFINIR i, j COMO ENTERO
+        
+        PARA i DESDE 0 HASTA (alto - 1) HACER
+            PARA j DESDE 0 HASTA (ancho - 1) HACER
+                verde[i][j][0] = 0                 // Eliminar componente rojo
+                verde[i][j][1] = matriz[i][j][1]   // Mantener componente verde
+                verde[i][j][2] = 0                 // Eliminar componente azul
+            FIN PARA
+        FIN PARA
+    FIN FUNCION
+
+    FUNCION separar_canal_azul_pnm(matriz[MAX_ALTO][MAX_ANCHO][3]: CARACTER_SIN_SIGNO, azul[MAX_ALTO][MAX_ANCHO][3]: CARACTER_SIN_SIGNO, alto: ENTERO, ancho: ENTERO)
+        
+        DEFINIR i, j COMO ENTERO
+        
+        PARA i DESDE 0 HASTA (alto - 1) HACER
+            PARA j DESDE 0 HASTA (ancho - 1) HACER
+                azul[i][j][0] = 0                 // Eliminar componente rojo
+                azul[i][j][1] = 0                 // Eliminar componente verde
+                azul[i][j][2] = matriz[i][j][2]   // Mantener componente azul
+            FIN PARA
+        FIN PARA
+    FIN FUNCION
+
+    FUNCION convertir_a_grises(matriz[MAX_ALTO][MAX_ANCHO][3]: CARACTER_SIN_SIGNO, grises[MAX_ALTO][MAX_ANCHO][3]: CARACTER_SIN_SIGNO, alto: ENTERO, ancho: ENTERO)
+        
+        // Declarar variables
+        DEFINIR i, j COMO ENTERO
+        DEFINIR valor_gris COMO CARACTER_SIN_SIGNO
+        
+        PARA i DESDE 0 HASTA (alto - 1) HACER
+            PARA j DESDE 0 HASTA (ancho - 1) HACER
+                // Calcular valor de gris usando pesos estándar
+                valor_gris = CONVERTIR_A_ENTERO(
+                    (matriz[i][j][0] * 0.299) +  // Componente rojo (29.9%)
+                    (matriz[i][j][1] * 0.587) +  // Componente verde (58.7%)
+                    (matriz[i][j][2] * 0.114)    // Componente azul (11.4%)
+                )
+                
+                // Asignar el mismo valor a los tres canales
+                grises[i][j][0] = valor_gris     // Canal rojo
+                grises[i][j][1] = valor_gris     // Canal verde
+                grises[i][j][2] = valor_gris     // Canal azul
+            FIN PARA
+        FIN PARA
+    FIN FUNCION
+
+    FUNCION convertir_a_bn(matriz[MAX_ALTO][MAX_ANCHO][3]: CARACTER_SIN_SIGNO, bn[MAX_ALTO][MAX_ANCHO][3]: CARACTER_SIN_SIGNO, alto: ENTERO, ancho: ENTERO, umbral: ENTERO)
+        
+        // Declarar variables
+        DEFINIR i, j COMO ENTERO
+        DEFINIR valor_gris COMO CARACTER_SIN_SIGNO
+        
+        // Validar rango del umbral
+        SI (umbral < 0) ENTONCES
+            umbral = 0
+        FIN SI
+        
+        SI (umbral > 255) ENTONCES
+            umbral = 255
+        FIN SI
+        
+        PARA i DESDE 0 HASTA (alto - 1) HACER
+            PARA j DESDE 0 HASTA (ancho - 1) HACER
+                // Convertir a escala de grises primero
+                valor_gris = CONVERTIR_A_ENTERO(
+                    (matriz[i][j][0] * 0.299) +  // Componente rojo
+                    (matriz[i][j][1] * 0.587) +  // Componente verde
+                    (matriz[i][j][2] * 0.114)    // Componente azul
+                )
+                
+                // Aplicar umbral para convertir a blanco y negro
+                SI (valor_gris >= umbral) ENTONCES
+                    bn[i][j][0] = 255            // Blanco (canal rojo)
+                    bn[i][j][1] = 255            // Blanco (canal verde)
+                    bn[i][j][2] = 255            // Blanco (canal azul)
+                SINO
+                    bn[i][j][0] = 0              // Negro (canal rojo)
+                    bn[i][j][1] = 0              // Negro (canal verde)
+                    bn[i][j][2] = 0              // Negro (canal azul)
+                FIN SI
+            FIN PARA
+        FIN PARA
+    FIN FUNCION
+
+    FUNCION calcular_histograma_color(matriz[MAX_ALTO][MAX_ANCHO][3]: CARACTER_SIN_SIGNO, alto: ENTERO, ancho: ENTERO, histR[256]: ENTERO, histG[256]: ENTERO, histB[256]: ENTERO)
+        
+        // Declarar variables
+        DEFINIR i, j COMO ENTERO
+        
+        // Inicializar todos los contadores de histogramas a cero
+        PARA i DESDE 0 HASTA 255 HACER
+            histR[i] = 0    // Inicializar histograma rojo
+            histG[i] = 0    // Inicializar histograma verde
+            histB[i] = 0    // Inicializar histograma azul
+        FIN PARA
+        
+        // Contar frecuencia de cada valor de color
+        PARA i DESDE 0 HASTA (alto - 1) HACER
+            PARA j DESDE 0 HASTA (ancho - 1) HACER
+                histR[matriz[i][j][0]]++    // Incrementar contador para valor rojo
+                histG[matriz[i][j][1]]++    // Incrementar contador para valor verde
+                histB[matriz[i][j][2]]++    // Incrementar contador para valor azul
+            FIN PARA
+        FIN PARA
+    FIN FUNCION
+
+    FUNCION calcular_histograma_grises(matriz[MAX_ALTO][MAX_ANCHO][3]: CARACTER_SIN_SIGNO, alto: ENTERO, ancho: ENTERO, hist[256]: ENTERO)
+        
+        // Declarar variables
+        DEFINIR i, j COMO ENTERO
+        DEFINIR valor_gris COMO CARACTER_SIN_SIGNO
+        
+        // Inicializar todos los contadores del histograma a cero
+        PARA i DESDE 0 HASTA 255 HACER
+            hist[i] = 0
+        FIN PARA
+        
+        // Calcular y contar valores de gris
+        PARA i DESDE 0 HASTA (alto - 1) HACER
+            PARA j DESDE 0 HASTA (ancho - 1) HACER
+                // Convertir pixel RGB a escala de grises usando pesos estándar
+                valor_gris = CONVERTIR_A_ENTERO(
+                    (matriz[i][j][0] * 0.299) +  // Componente rojo (29.9%)
+                    (matriz[i][j][1] * 0.587) +  // Componente verde (58.7%)
+                    (matriz[i][j][2] * 0.114)    // Componente azul (11.4%)
+                )
+                
+                // Incrementar el contador correspondiente
+                hist[valor_gris]++
+            FIN PARA
+        FIN PARA
+    FIN FUNCION
+
+    FUNCION escribir_histograma(nombre_archivo: TEXTO CONSTANTE, histograma[256]: ENTERO)
+        
+        // Declarar variables
+        DEFINIR i, j COMO ENTERO
+        
+        // Abrir archivo en modo escritura
+        archivo = ABRIR_ARCHIVO(nombre_archivo, "w")
+        
+        SI (archivo ES NULO) ENTONCES
+            IMPRIMIR "Error al crear archivo ", nombre_archivo
+        FIN SI
+        
+        // Escribir encabezado con tabuladores
+        ESCRIBIR_FORMATO(archivo, "Tono\tValor\tHistograma\n")
+        
+        // Escribir datos del histograma
+        PARA i DESDE 0 HASTA 255 HACER
+            SI (histograma[i] > 0) ENTONCES    // Solo procesar valores que aparecen
+                // Escribir tono y valor numérico
+                ESCRIBIR_FORMATO(archivo, "%d\t%d\t", i, histograma[i])
+                
+                // Escribir representación visual con asteriscos
+                PARA j DESDE 0 HASTA (histograma[i] / 100 - 1) HACER
+                    ESCRIBIR_FORMATO(archivo, "*")
+                FIN PARA
+                
+                ESCRIBIR_FORMATO(archivo, "\n")
+            FIN SI
+        FIN PARA
+        
+        CERRAR_ARCHIVO(archivo)
+    FIN FUNCION
+
+    FUNCION mezclar_imagenes(frente[MAX_ALTO][MAX_ANCHO][3]: CARACTER_SIN_SIGNO,fondo[MAX_ALTO][MAX_ANCHO][3]: CARACTER_SIN_SIGNO,mezcla[MAX_ALTO][MAX_ANCHO][3]: CARACTER_SIN_SIGNO,alto: ENTERO,ancho: ENTERO,alpha: ENTERO)
+        
+        // Declarar variables
+        DEFINIR i, j, k, valor_mezcla COMO ENTERO
+        
+        // Validar rango de alpha
+        SI (alpha < 0) ENTONCES
+            alpha = 0
+        FIN SI
+        
+        SI (alpha > 255) ENTONCES
+            alpha = 255
+        FIN SI
+        
+        // Procesar cada pixel
+        PARA i DESDE 0 HASTA (alto - 1) HACER
+            PARA j DESDE 0 HASTA (ancho - 1) HACER
+                PARA k DESDE 0 HASTA 2 HACER    // Procesar cada canal RGB
+                    // Calcular mezcla usando la fórmula:
+                    // MEZCLAi = (FRENTEi × alpha) ÷ 256 + (FONDOi × (255 − alpha)) ÷ 256
+                    valor_mezcla = ((frente[i][j][k] * alpha) + 
+                                (fondo[i][j][k] * (255 - alpha))) / 256
+                    
+                    // Validar rango del resultado
+                    SI (valor_mezcla > 255) ENTONCES
+                        valor_mezcla = 255
+                    FIN SI
+                    
+                    SI (valor_mezcla < 0) ENTONCES
+                        valor_mezcla = 0
+                    FIN SI
+                    
+                    // Asignar valor final
+                    mezcla[i][j][k] = CONVERTIR_A_CARACTER(valor_mezcla)
+                FIN PARA
+            FIN PARA
+        FIN PARA
+    FIN FUNCION
+FIN
