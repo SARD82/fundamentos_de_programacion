@@ -1,5 +1,5 @@
 //Proyecto_final
-//Alumnos: Durán Rendón Santiago, Noriega Chiu Santiago, Ramírez Reyes Jesús. 
+//Alumnos: Durán Rendón Santiago.
 //20-11-24
 
 //Los comentarios de una línea se usaran para la documentación del programa.
