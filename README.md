@@ -1,4 +1,4 @@
-[![DOI](https://zenodo.org/badge/46740228.svg)](http://profesores.fi-b.unam.mx/cintia/Temariof.pdf)[![DOI](https://zenodo.org/badge/46740228.svg)](https://odin.fi-b.unam.mx/salaf/pdf/FP/MADO-17_FPv4.pdf)
+[![Temario](https://zenodo.org/badge/46740228.svg)](http://profesores.fi-b.unam.mx/cintia/Temariof.pdf)[![DOI](https://zenodo.org/badge/46740228.svg)](https://odin.fi-b.unam.mx/salaf/pdf/FP/MADO-17_FPv4.pdf)
 
 # fundamentos_de_programacion
 
