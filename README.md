@@ -1,5 +1,5 @@
 
-[![Temario](https://zenodo.org/badge/46740228.svg)](http://lcp02.fi-b.unam.mx/static/docs/TemarioFP.pdf)[![Manual de laboratorio](https://zenodo.org/badge/46740228.svg)](http://lcp02.fi-b.unam.mx/static/docs/MADO-17_FPv5-1.pdf)[![Temario](https://zenodo.org/badge/46740228.svg)](http://profesores.fi-b.unam.mx/cintia/Temariof.pdf)[![DOI](https://zenodo.org/badge/46740228.svg)](https://odin.fi-b.unam.mx/salaf/pdf/FP/MADO-17_FPv4.pdf)
+[![Temario](https://zenodo.org/badge/46740228.svg)](http://lcp02.fi-b.unam.mx/static/docs/TemarioFP.pdf)[![Manual de laboratorio](https://zenodo.org/badge/46740228.svg)](http://lcp02.fi-b.unam.mx/static/docs/MADO-17_FPv5-1.pdf)
 
 # Fundamentos De Programación
 
