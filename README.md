@@ -62,5 +62,6 @@ Desarrollado por **Santiago Durán Rendón**.
 ## 📄 Licencia
 
 Este repositorio fue realizado con fines educativos. Puedes reutilizar el código siempre y cuando cites la fuente y no lo uses con fines comerciales sin permiso.
+Este proyecto está bajo la licencia MIT. Consulta el archivo [LICENSE](./LICENSE) para más detalles.
 
 ---
